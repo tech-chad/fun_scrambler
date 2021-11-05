@@ -32,7 +32,6 @@ def scrambler_loop(screen, args):
     all_char_set = ["T"] if args.test_mode else char_set
     curses.curs_set(0)  # Set the cursor to off.
     screen.timeout(0)  # Turn blocking off for screen.getch().
-
     set_curses_color("magenta")
 
     while True:
