@@ -1,4 +1,5 @@
 import pytest
+import time
 
 from hecate import Runner
 
@@ -64,3 +65,27 @@ def test_run_scrambler_running_set_colors_again():
         h.await_text("red")
         h.write("p")
         h.await_text("white")
+
+
+@pytest.mark.parametrize("test_key", ["u", "8", " ", "", "c", "d", "S"])
+def test_fun_scrambler_screen_saver_mode(test_key):
+    with Runner(*run_fun_scrambler("--test_mode", "-S")) as h:
+        h.write(test_key)
+        h.await_exit()
+
+
+def test_run_scrambler_start_time():
+    with Runner(*run_fun_scrambler("--test_mode", "-s", "2")) as h:
+        h.default_timeout = 4
+        time.sleep(1)
+        sc = h.screenshot()
+        assert "T" not in sc
+        time.sleep(1)
+        h.await_text("T")
+
+
+def test_run_scrambler_run_timer():
+    with Runner(*run_fun_scrambler("--test_mode", "-r2")) as h:
+        h.default_timeout = 2
+        h.await_text("T")
+        h.await_exit()

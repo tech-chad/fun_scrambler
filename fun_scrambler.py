@@ -1,6 +1,7 @@
 # fun-scrambler
 import argparse
 import curses
+import datetime
 import random
 import time
 
@@ -38,7 +39,9 @@ def scrambler_loop(screen, args: argparse.Namespace):
     curses.curs_set(0)  # Set the cursor to off.
     screen.timeout(0)  # Turn blocking off for screen.getch().
     set_curses_color(color)
-
+    if args.start_timer:
+        time.sleep(args.start_timer)
+    end_time = datetime.datetime.now() + datetime.timedelta(seconds=args.run_timer)
     while True:
 
         size_y, size_x = screen.getmaxyx()
@@ -53,9 +56,12 @@ def scrambler_loop(screen, args: argparse.Namespace):
         time.sleep(delay)
         if args.test_mode:
             screen.addstr(size_y - 1, 0, color)
-
+        if args.run_timer and datetime.datetime.now() >= end_time:
+            break
         ch = screen.getch()
         if ch in [81, 113]:
+            break
+        elif args.screen_saver and ch != -1:
             break
         elif ch == 114:  # r
             color = "red"
@@ -108,12 +114,33 @@ def argparse_color_type(value: str) -> str:
         raise argparse.ArgumentTypeError(f"{value} is not a valid color")
 
 
+def positive_int(value: str) -> int:
+    """
+    Used by argparse.
+    Checks to see if the value is positive.
+    """
+    try:
+        int_value = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{value} is an invalid positive int value")
+    else:
+        if int_value <= 0:
+            raise argparse.ArgumentTypeError(f"{value} is an invalid positive int value")
+    return int_value
+
+
 def argument_parsing(agv: Optional[Sequence] = None):
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--color", type=argparse_color_type, default="white",
                         help="Set the character color.")
     parser.add_argument("-d", "--delay", type=positive_int_zero_to_nine,
                         default=5, help="Set the delay (Speed) 0-fast, 9-slow")
+    parser.add_argument("-S", "--screen_saver", action="store_true",
+                        help="Screen saver mode. Any key wll exit")
+    parser.add_argument("-s", "--start_timer", type=positive_int, default=0,
+                        help="Number of seconds to wait before starting.")
+    parser.add_argument("-r", "--run_timer", type=positive_int, default=0,
+                        help="Number of second to wait before quitting")
 
     parser.add_argument("--test_mode", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args(agv)
