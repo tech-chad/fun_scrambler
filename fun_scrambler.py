@@ -36,6 +36,8 @@ def scrambler_loop(screen, args: argparse.Namespace):
     all_char_set = ["T"] if args.test_mode else CHAR_SET
     color = args.color
     delay = DELAY[args.delay]
+    bold_all = args.bold_all
+    bold = args.bold
     curses.curs_set(0)  # Set the cursor to off.
     screen.timeout(0)  # Turn blocking off for screen.getch().
     set_curses_color(color)
@@ -47,12 +49,18 @@ def scrambler_loop(screen, args: argparse.Namespace):
         size_y, size_x = screen.getmaxyx()
         for y in range(0, size_y - 1):
             for x in range(0, size_x - 1):
+                if bold_all:
+                    char_bold = curses.A_BOLD
+                elif bold and random.randint(0, 10) <= 2:
+                    char_bold = curses.A_BOLD
+                else:
+                    char_bold = 0
                 random_color = random.choice([1, 2, 3, 4, 5, 6, 7, 8])
                 r = random.randint(0, 10)
                 if r >= 6:
                     screen.addstr(y, x,
                                   random.choice(all_char_set),
-                                  curses.color_pair(random_color))
+                                  curses.color_pair(random_color) + char_bold)
         time.sleep(delay)
         if args.test_mode:
             screen.addstr(size_y - 1, 0, color)
@@ -63,6 +71,10 @@ def scrambler_loop(screen, args: argparse.Namespace):
             break
         elif args.screen_saver and ch != -1:
             break
+        elif ch == 66:  # B
+            bold_all = not bold_all
+        elif ch == 98:  # b
+            bold = not bold
         elif ch == 114:  # r
             color = "red"
             set_curses_color(color)
@@ -141,6 +153,10 @@ def argument_parsing(agv: Optional[Sequence] = None):
                         help="Number of seconds to wait before starting.")
     parser.add_argument("-r", "--run_timer", type=positive_int, default=0,
                         help="Number of second to wait before quitting")
+    parser.add_argument("-B", "--bold_all", action="store_true",
+                        help="Bold all characters.")
+    parser.add_argument("-b", "--bold", action="store_true",
+                        help="Bold some of the characters")
 
     parser.add_argument("--test_mode", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args(agv)

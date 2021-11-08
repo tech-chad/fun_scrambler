@@ -11,7 +11,7 @@ def test_argument_parser_test_mode(test_value, expected):
     assert result.test_mode == expected
 
 
-@pytest.mark.parametrize("test_value, expected",[
+@pytest.mark.parametrize("test_value, expected", [
     (["-c", "red"], "red"), (["--color", "Yellow"], "yellow"),
     (["-c", "GREEN"], "green")
 ])
@@ -52,6 +52,22 @@ def test_argument_parsing_start_timer(test_value, expected):
 def test_argument_parser_run_timer(test_value, expected):
     result = fun_scrambler.argument_parsing(test_value)
     assert result.run_timer == expected
+
+
+@pytest.mark.parametrize("test_value, expected", [
+    ([], False), (["-B"], True), (["--bold_all"], True),
+])
+def test_argument_parser_bold_all(test_value, expected):
+    result = fun_scrambler.argument_parsing(test_value)
+    assert result.bold_all == expected
+
+
+@pytest.mark.parametrize("test_value, expected", [
+    ([], False), (["-b"], True), (["--bold"], True),
+])
+def test_argument_parser_bold(test_value, expected):
+    result = fun_scrambler.argument_parsing(test_value)
+    assert result.bold == expected
 
 
 @pytest.mark.parametrize("test_value, expected", [
